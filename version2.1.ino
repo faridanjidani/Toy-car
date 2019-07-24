@@ -5,19 +5,13 @@
 
 //#define BATTERY_LEVEL_PIN ADC
 
-const char *ssid = "cabinet-router";
+const char *ssid = "Mcar";
 const char *password = "123456789";
-const int httpPort = 8080; // set server port 
-const char *host = "192.168.1.34"; // set server IP
-IPAddress staticIP(192,168,1,70);
-IPAddress gateway(192,168,1,1);
-IPAddress subnet(255,255,255,0);
-
+const int httpPort = 37842;
+const char *host = "192.168.4.2";
 WiFiClient client;
 String endConnection = "Connection: close\r\n";
 String contentType = "Content-Type: application/json";
-
-
 
 
 
@@ -102,11 +96,10 @@ void setup()
   Serial.println();
   Serial.print("Configuring access point...");
   /* You can remove the password parameter if you want the AP to be open. */
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  WiFi.config(staticIP, gateway, subnet);
- // IPAddress myIP = WiFi.softAPIP();
-//Serial.println(myIP);
+  WiFi.softAP(ssid, password);
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.println(myIP);
+  
   attachInterrupt(digitalPinToInterrupt(encoderIn1), enc1, RISING);
   attachInterrupt(digitalPinToInterrupt(encoderIn2), enc2, RISING);
   
@@ -128,7 +121,6 @@ void enc2(){
 void loop()
 {
   //delay(200);
-  client.setTimeout(400);
   send_data();
 }
 
@@ -139,7 +131,7 @@ void send_data(){
         delay(1500);
         Serial.println("connection failed");
         return;
-  }  
+  }
   handleroot(xAccl ,yAccl ,zAccl );
 
       Serial.print("Acceleration in X-Axis : ");
@@ -154,11 +146,11 @@ void send_data(){
       Serial.println(countEncoder2);
       Serial.print("ADC");
       Serial.println(analogRead(A0));
-      client.print(String("POST ") + "/api/toycar" + " HTTP/1.1\r\n" +
+  client.print(String("POST ") + "/" + " HTTP/1.1\r\n" +
              "Host: " + host + "\r\n" +
              endConnection +
              contentType + "\r\n\r\n" +
-             jsonEncoder(timer, AcX, AcY, AcZ, countEncoder1, countEncoder2)
+             jsonEncoder(timer,xAccl, yAccl, zAccl, countEncoder1, countEncoder2)
              + "\r\n");
   Serial.print("sending data to cellphone");
 }
